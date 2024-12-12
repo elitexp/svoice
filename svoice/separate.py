@@ -56,7 +56,7 @@ def save_wavs(estimate_source, mix_sig, lengths, filenames, out_dir, sr=16000):
 
 def write(inputs, filename, sr=8000):
     import soundfile as sf
-    sf.write(filename, inputs, sr, 'PCM_16')
+    sf.write(filename, inputs, sr, 'PCM_24')
 
     # librosa.save(filename, inputs, sr, norm=True)
 
@@ -88,7 +88,7 @@ def separate(args, model=None, local_out_dir=None):
     # Load model
     if not model:
         # model
-        pkg = torch.load(args.model_path, map_location=torch.device("mps"))
+        pkg = torch.load(args.model_path, map_location=torch.device(args.device))
         if 'model' in pkg:
             model = pkg['model']
         else:

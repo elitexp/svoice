@@ -10,12 +10,12 @@ stride: 1    # in seconds, how much to stride between training examples
 pad: true   # if training sample is too short, pad it
 cv_maxlen: 8
 validfull: 1   # use entire samples at valid
-count: 100
+count: 0
 
 # Logging and printing, and does not impact training
 num_prints: 5
 device: cuda
-num_workers: 0
+num_workers: 2
 verbose: 1
 show: 0   # just show the model and its size and exit
 
@@ -79,7 +79,7 @@ aworld_size:
 # Hydra config
 hydra:
   run:
-    dir: ./outputs/exp_${hydra.job.override_dirname}
+    dir: /content/drive/MyDrive/outputs/exp_${hydra.job.override_dirname}
   job:
     config:
       # configuration for the ${hydra.job.override_dirname} runtime variable
