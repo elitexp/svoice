@@ -33,6 +33,7 @@ class Solver(object):
         self.tr_loader = data['tr_loader']
         self.cv_loader = data['cv_loader']
         self.tt_loader = data['tt_loader']
+
         self.model = model
         self.dmodel = distrib.wrap(model)
         self.optimizer = optimizer
@@ -192,8 +193,8 @@ class Solver(object):
                               updates=self.num_prints, name=name)
         for i, data in enumerate(logprog):
             mixture, lengths, sources = [x.to(self.device) for x in data]
+            self.dmodel.to(torch.device("mps"))
             estimate_source = self.dmodel(mixture)
-
             # only eval last layer
             if cross_valid:
                 estimate_source = estimate_source[-1:]

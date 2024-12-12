@@ -1,0 +1,7 @@
+
+# @package dset
+train: egs/nepali
+valid: egs/nepali
+test: egs/nepali
+mix_json: egs/nepali/mix.json
+mix_dir:

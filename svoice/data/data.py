@@ -28,7 +28,7 @@ def sort(infos): return sorted(
 
 
 class Trainset:
-    def __init__(self, json_dir, sample_rate=16000, segment=4.0, stride=1.0, pad=True):
+    def __init__(self, json_dir, sample_rate=16000, segment=4.0, stride=1.0, pad=True, count=10):
         mix_json = os.path.join(json_dir, 'mix.json')
         s_jsons = list()
         s_infos = list()
@@ -47,19 +47,21 @@ class Trainset:
         stride = int(sample_rate * stride)
 
         kw = {'length': length, 'stride': stride, 'pad': pad}
-        self.mix_set = Audioset(sort(mix_infos), **kw)
+        self.mix_set = Audioset(sort(mix_infos), count=count, **kw)
 
         self.sets = list()
         for s_info in s_infos:
-            self.sets.append(Audioset(sort(s_info), **kw))
+            self.sets.append(Audioset(sort(s_info), count=count, **kw))
 
         # verify all sets has the same size
         for s in self.sets:
             assert len(s) == len(self.mix_set)
 
+    # Retrieve the mixture signal and target signals for the given index
     def __getitem__(self, index):
-        mix_sig = self.mix_set[index]
-        tgt_sig = [self.sets[i][index] for i in range(len(self.sets))]
+        mix_sig = self.mix_set[index]  # Get the mixture signal
+        tgt_sig = [self.sets[i][index] for i in range(len(self.sets))]  # Get the target signals for all sets
+        # Return mixture signal, its length, and stacked target signals
         return self.mix_set[index], torch.LongTensor([mix_sig.shape[0]]), torch.stack(tgt_sig)
 
     def __len__(self):
@@ -71,7 +73,7 @@ class Validset:
     load entire wav.
     """
 
-    def __init__(self, json_dir):
+    def __init__(self, json_dir, count=-1):
         mix_json = os.path.join(json_dir, 'mix.json')
         s_jsons = list()
         s_infos = list()
@@ -84,10 +86,15 @@ class Validset:
         for s_json in s_jsons:
             with open(s_json, 'r') as f:
                 s_infos.append(json.load(f))
-        self.mix_set = Audioset(sort(mix_infos))
+        length = 64000
+        stride = 16000
+        pad = True
+        kw = {'length': length, 'stride': stride, 'pad': pad}
+
+        self.mix_set = Audioset(sort(mix_infos), count=count, **kw)
         self.sets = list()
         for s_info in s_infos:
-            self.sets.append(Audioset(sort(s_info)))
+            self.sets.append(Audioset(sort(s_info), count=count, **kw))
         for s in self.sets:
             assert len(s) == len(self.mix_set)
 

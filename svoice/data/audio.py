@@ -31,15 +31,15 @@ def find_audio_files(path, exts=[".wav"], progress=True):
     if progress:
         audio_files = tqdm.tqdm(audio_files,  ncols=80)
     for file in audio_files:
-        siginfo, _ = torchaudio.info(file)
-        length = siginfo.length // siginfo.channels
+        siginfo = torchaudio.info(file)
+        length = siginfo.num_frames // siginfo.num_channels
         meta.append((file, length))
     meta.sort()
     return meta
 
 
 class Audioset:
-    def __init__(self, files, length=None, stride=None, pad=True, augment=None):
+    def __init__(self, files, length=None, stride=None, pad=True, augment=None, count=-1):
         """
         files should be a list [(file, length)]
         """
@@ -48,6 +48,7 @@ class Audioset:
         self.length = length
         self.stride = stride or length
         self.augment = augment
+        index = 1
         for file, file_length in self.files:
             if length is None:
                 examples = 1
@@ -59,6 +60,9 @@ class Audioset:
             else:
                 examples = (file_length - self.length) // self.stride + 1
             self.num_examples.append(examples)
+            if index == count:
+                break
+            index = index+1
 
     def __len__(self):
         return sum(self.num_examples)
@@ -74,7 +78,7 @@ class Audioset:
                 offset = self.stride * index
                 num_frames = self.length
             #  out = th.Tensor(sf.read(str(file), start=offset, frames=num_frames)[0]).unsqueeze(0)
-            out = torchaudio.load(str(file), offset=offset,
+            out = torchaudio.load(str(file), frame_offset=offset,
                                   num_frames=num_frames)[0]
             if self.augment:
                 out = self.augment(out.squeeze(0).numpy()).unsqueeze(0)

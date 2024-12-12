@@ -161,12 +161,12 @@ class Separator(nn.Module):
         rest = segment_size - (segment_stride + seq_len %
                                segment_size) % segment_size
         if rest > 0:
-            pad = Variable(torch.zeros(batch_size, dim, rest)
-                           ).type(input.type())
+
+            pad = Variable(torch.zeros(batch_size, dim, rest, dtype=input.dtype, device=input.device))
             input = torch.cat([input, pad], 2)
 
         pad_aux = Variable(torch.zeros(
-            batch_size, dim, segment_stride)).type(input.type())
+            batch_size, dim, segment_stride, dtype=input.dtype, device=input.device))
         input = torch.cat([pad_aux, input, pad_aux], 2)
         return input, rest
 
@@ -212,7 +212,7 @@ class Separator(nn.Module):
             input, self.segment_size)
         # separate
         output_all = self.rnn_model(enc_segments)
-        
+
         # merge back audio files
         output_all_wav = []
         for ii in range(len(output_all)):
@@ -247,6 +247,8 @@ class SWave(nn.Module):
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_normal_(p)
+        self.device = torch.device("mps:0" if torch.backends.mps.is_available() else "cpu")
+        self.to(self.device)  # Move the model to the specified device
 
     def forward(self, mixture):
         mixture_w = self.encoder(mixture)

@@ -4,18 +4,19 @@ defaults:
   - hydra/hydra_logging: colorlog
 
 # Dataset related
-sample_rate: 8000
+sample_rate: 16000
 segment: 4
 stride: 1    # in seconds, how much to stride between training examples
 pad: true   # if training sample is too short, pad it
 cv_maxlen: 8
 validfull: 1   # use entire samples at valid
+count: 100
 
 # Logging and printing, and does not impact training
 num_prints: 5
-device: cuda
-num_workers: 5
-verbose: 0
+device: mps
+num_workers: 0
+verbose: 1
 show: 0   # just show the model and its size and exit
 
 # Checkpointing, by default automatically load last checkpoint
@@ -45,7 +46,7 @@ stft_loss: False
 stft_sc_factor: .5
 stft_mag_factor: .5
 epochs: 100
-batch_size: 4
+batch_size: 2
 max_norm: 5
 # learning rate scheduling
 lr_sched: step # can be either step or plateau
@@ -73,7 +74,7 @@ rendezvous_file: ./rendezvous
 
 # Internal config, don't set manually
 rank:
-world_size:
+aworld_size:
 
 # Hydra config
 hydra:

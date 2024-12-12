@@ -16,7 +16,7 @@ import time
 from omegaconf import DictConfig, OmegaConf
 import hydra
 
-from svoice.executor import start_ddp_workers
+# from svoice.executor import start_ddp_workers
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ def run(args):
         kwargs['sr'] = args.sample_rate
         kwargs['segment'] = args.segment
         model = SWave(**kwargs)
+
     else:
         logger.fatal("Invalid model name %s", args.model)
         os._exit(1)
@@ -61,13 +62,15 @@ def run(args):
 
     # Building datasets and loaders
     tr_dataset = Trainset(
-        args.dset.train, sample_rate=args.sample_rate, segment=args.segment, stride=args.stride, pad=args.pad)
+        args.dset.train, sample_rate=args.sample_rate, segment=args.segment, stride=args.stride, pad=args.pad, count=args.count)
     tr_loader = distrib.loader(
         tr_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # batch_size=1 -> use less GPU memory to do cv
-    cv_dataset = Validset(args.dset.valid)
-    tt_dataset = Validset(args.dset.test)
+    cv_dataset = Validset(args.dset.valid, count=args.count)
+    tt_dataset = Validset(args.dset.test, count=args.count)
+    # print(len(cv_dataset))
+    # raise Exception()
     cv_loader = distrib.loader(
         cv_dataset, batch_size=1, num_workers=args.num_workers)
     tt_loader = distrib.loader(
@@ -79,6 +82,8 @@ def run(args):
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         model.cuda()
+    else:
+        model.to(torch.device("mps"))
 
     # optimizer
     if args.optim == "adam":
@@ -106,10 +111,7 @@ def _main(args):
 
     logger.info("For logs, checkpoints and samples check %s", os.getcwd())
     logger.debug(args)
-    if args.ddp and args.rank is None:
-        start_ddp_workers()
-    else:
-        run(args)
+    run(args)
 
 
 @hydra.main(config_path="conf", config_name='config.yaml')
