@@ -14,7 +14,7 @@ count: 100
 
 # Logging and printing, and does not impact training
 num_prints: 5
-device: mps
+device: cuda
 num_workers: 0
 verbose: 1
 show: 0   # just show the model and its size and exit

@@ -55,7 +55,10 @@ def save_wavs(estimate_source, mix_sig, lengths, filenames, out_dir, sr=16000):
 
 
 def write(inputs, filename, sr=8000):
-    librosa.output.write_wav(filename, inputs, sr, norm=True)
+    import soundfile as sf
+    sf.write(filename, inputs, sr, 'PCM_16')
+
+    # librosa.save(filename, inputs, sr, norm=True)
 
 
 def get_mix_paths(args):
@@ -64,7 +67,7 @@ def get_mix_paths(args):
     # fix mix dir
     try:
         if args.dset.mix_dir:
-           mix_dir = args.dset.mix_dir
+            mix_dir = args.dset.mix_dir
     except:
         mix_dir = args.mix_dir
 
@@ -85,7 +88,7 @@ def separate(args, model=None, local_out_dir=None):
     # Load model
     if not model:
         # model
-        pkg = torch.load(args.model_path)
+        pkg = torch.load(args.model_path, map_location=torch.device("mps"))
         if 'model' in pkg:
             model = pkg['model']
         else:

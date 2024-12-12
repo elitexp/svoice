@@ -193,7 +193,8 @@ class Solver(object):
                               updates=self.num_prints, name=name)
         for i, data in enumerate(logprog):
             mixture, lengths, sources = [x.to(self.device) for x in data]
-            self.dmodel.to(torch.device("mps"))
+            if(torch.backends.mps.is_available() and self.args.device != "cuda"):
+                self.dmodel.to(torch.device("mps"))
             estimate_source = self.dmodel(mixture)
             # only eval last layer
             if cross_valid:

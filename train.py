@@ -82,7 +82,7 @@ def run(args):
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         model.cuda()
-    else:
+    elif torch.backends.mps.is_available():
         model.to(torch.device("mps"))
 
     # optimizer

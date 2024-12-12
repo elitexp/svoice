@@ -247,8 +247,6 @@ class SWave(nn.Module):
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_normal_(p)
-        self.device = torch.device("mps:0" if torch.backends.mps.is_available() else "cpu")
-        self.to(self.device)  # Move the model to the specified device
 
     def forward(self, mixture):
         mixture_w = self.encoder(mixture)
